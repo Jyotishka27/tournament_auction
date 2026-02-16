@@ -9,4 +9,4 @@ const CATEGORY_LABELS = {
 
 const REDUCTION_FACTOR = 0.8;
 const MIN_PRICE = 50000;
-const AUTOSAVE_KEY = 'auction_autosave_v1';
+const AUTOSAVE_KEY = 'auction_autosave_v2';
