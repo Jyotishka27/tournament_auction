@@ -198,3 +198,32 @@ function findPlayerInMaster(id, cat) {
   return (AUCTION_DATA.players[cat] || []).find(p => p.id === id) || null;
 }
 
+// ===============================
+// Wire UI Events
+// ===============================
+function wireEvents() {
+
+  // Category buttons
+  document.querySelectorAll('.catBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setCategory(btn.dataset.cat);
+    });
+  });
+
+  // Main control buttons
+  document.getElementById('btnNext').addEventListener('click', nextPlayer);
+  document.getElementById('btnSkip').addEventListener('click', skipPlayer);
+  document.getElementById('btnSell').addEventListener('click', sell);
+
+  // Toggle results
+  document.getElementById('btnToggleResults').addEventListener('click', (e) => {
+    const btn = e.target;
+    const hidden = btn.dataset.hidden === '1';
+
+    btn.dataset.hidden = hidden ? '0' : '1';
+    renderResults();
+  });
+
+}
+
+
