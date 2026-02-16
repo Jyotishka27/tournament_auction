@@ -5,12 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Football Auctioneer</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
 <style>
   body {
-    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    font-family: Inter, system-ui;
   }
   .countdown.blink {
     animation: blink 1s steps(2, start) infinite;
@@ -18,731 +16,221 @@
   @keyframes blink {
     to { visibility: hidden; }
   }
-  .scroll-smooth {
-    scroll-behavior: smooth;
-  }
-  /* Fixed aspect ratio container for player images */
-  .player-img-container {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9; /* adjust ratio as needed */
-    overflow: hidden;
-    border: 1px solid #CBD5E0; /* Tailwind border color */
-    border-radius: 0.75rem; /* rounded-xl */
-    background-color: #F1F5F9; /* slate-100 */
-  }
-  .player-img-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center center;
-    display: block;
-  }
-  button: disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-  img[alt="player"] {
-    object-fit: cover;
-  }
-  button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
 </style>
 </head>
-<body class="bg-slate-50 text-slate-900 scroll-smooth">
-<!-- HEADER -->
-<header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
-  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-    <div class="text-xl font-bold">⚽ Independence Cup 2025 Auction</div>
-    <nav class="ml-auto flex items-center gap-2 text-sm">
-      <button id="btnSaveState" class="px-3 py-1.5 rounded-xl bg-slate-900 text-white hover:opacity-90">Save</button>
-      <label class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 cursor-pointer">
-        Load <input id="fileLoadState" type="file" accept="application/json" class="hidden" />
-      </label>
-      <button id="btnExportCSV" class="px-3 py-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700">Export CSV</button>
-      <button id="btnResetAll" class="px-3 py-1.5 rounded-xl border border-rose-300 text-rose-700 hover:bg-rose-50">Reset</button>
-      <!-- Added Logout button -->
-      <a href="index.html" id="btnLogout" class="px-3 py-1.5 rounded-xl bg-rose-600 text-white hover:bg-rose-700" title="Logout to home">Logout</a>
-    </nav>
-  </div>
+
+<body class="bg-slate-50 text-slate-900">
+
+<header class="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+  <div class="text-xl font-bold">⚽ Independence Cup 2025 Auction</div>
 </header>
-<!-- MAIN CONTENT -->
-<main class="max-w-7xl mx-auto p-4 grid lg:grid-cols-3 gap-4">
-  <!-- LEFT: Categories and Current Player -->
-  <section class="lg:col-span-2 space-y-4">
-    <!-- Instructions -->
-    <details class="bg-white rounded-2xl border border-slate-200 p-4" open>
-      <summary class="font-semibold cursor-pointer select-none">Information</summary>
-      <div class="mt-3 text-sm text-slate-700 space-y-2">
-        <p> Base price is the minimum starting bid. </p>
-        <ul class="list-disc pl-6">
-          <li>Categories: <strong>BP: 4</strong>, <strong>BP: 6</strong>, <strong>BP: 3 & 5</strong></li>
-          <li>Only the auctioneer uses this page. Teams call bids verbally.</li>
-          <li>Timer starts at the <em>first</em> bid and resets to 45s after every new bid.</li>
-          <li>When the timer hits 0, the player is sold to the highest bidder (if any).</li>
-        </ul>
-      </div>
-    </details>
-    <!-- Category Controls -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-4">
-      <div class="flex items-center justify-between gap-3 flex-wrap">
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-slate-600">Category:</span>
-          <div class="inline-flex rounded-xl overflow-hidden border border-slate-200" role="tablist" aria-label="Player categories">
-            <button data-cat="GK" class="catBtn px-3 py-1.5 text-sm bg-slate-900 text-white" role="tab">BP: 4</button>
-            <button data-cat="A" class="catBtn px-3 py-1.5 text-sm hover:bg-slate-100" role="tab">BP: 6</button>
-            <button data-cat="B" class="catBtn px-3 py-1.5 text-sm hover:bg-slate-100" role="tab">BP: 3 & 5</button>
-            <button data-cat="UNSOLD" class="catBtn px-3 py-1.5 text-sm hover:bg-slate-100" role="tab">UnSold</button>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="btnNext" class="px-3 py-1.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700" aria-disabled="false">Next Player (Random)</button>
-          <button id="btnSkip" class="px-3 py-1.5 rounded-xl border border-slate-300 hover:bg-slate-50" aria-disabled="false">Skip</button>
-          <button id="btnUndo" class="px-3 py-1.5 rounded-xl border border-amber-300 text-amber-700 hover:bg-amber-50">Undo Last Sale</button>
-        </div>
-      </div>
-      <p class="mt-2 text-xs text-slate-500">Random draw is from the currently selected category.... Skipped players remain in the pool.</p>
+
+<main class="max-w-6xl mx-auto p-6 space-y-6">
+
+  <!-- PLAYER CARD -->
+  <div id="currentPlayerCard"
+       class="bg-white rounded-2xl border border-slate-200 p-6 grid md:grid-cols-3 gap-6"
+       hidden>
+
+    <!-- IMAGE -->
+    <div>
+      <img id="playerImg"
+           class="w-full h-64 object-cover rounded-xl border border-slate-200 bg-slate-100" />
     </div>
-    <!-- Current Player Card -->
-    <div id="currentPlayerCard" class="bg-white rounded-2xl border border-slate-200 p-4 grid md:grid-cols-3 gap-4" hidden>
-      <div>
-        <img id="playerImg" alt="player" class="w-full h-56 rounded-xl border border-slate-200 bg-slate-100" src="" />
-      </div>
-      <div class="md:col-span-2 flex flex-col gap-3">
-        <div class="flex items-center justify-between">
-          <div>
-            <h2 id="playerName" class="text-xl font-bold">—</h2>
-            <p class="text-sm text-slate-600"> Category: <span id="playerCat">—</span> </p>
-            <p class="text-sm text-slate-600"> Position: <span id="playerPosition">—</span> </p>
-          </div>
-          <div class="text-right">
-            <div class="text-xs text-slate-500">Base Price</div>
-            <div id="playerBase" class="text-lg font-semibold">—</div>
-          </div>
+
+    <!-- PLAYER INFO + AUCTION -->
+    <div class="md:col-span-2 space-y-6">
+
+      <!-- INFO -->
+      <div class="flex justify-between">
+        <div>
+          <h2 id="playerName" class="text-2xl font-bold"></h2>
+          <p class="text-slate-600">Category: <span id="playerCat"></span></p>
+          <p class="text-slate-600">Position: <span id="playerPosition"></span></p>
         </div>
-        <div class="grid sm:grid-cols-3 gap-3 items-end">
-          <div>
-            <div class="mt-4">
-              <div class="flex items-center justify-between mb-3">
-                <h3 class="text-sm font-semibold text-slate-700 tracking-wide">
-                  Place Bid
-                </h3>
-                <span class="text-xs text-slate-500">
-                  Click team to increase bid
-                </span>
-              </div>
-            
-              <div id="bidTeamsContainer"
-                   class="grid grid-cols-2 sm:grid-cols-3 gap-3"
-                   role="list"
-                   aria-label="Place bid buttons">
-              </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-500 uppercase">Base Price</div>
+          <div id="playerBase" class="text-lg font-semibold"></div>
+        </div>
+      </div>
+
+      <!-- AUCTION CONTROL PANEL -->
+      <div class="space-y-6">
+
+        <!-- STATUS ROW -->
+        <div class="grid md:grid-cols-3 gap-4">
+
+          <!-- CURRENT BID -->
+          <div class="bg-slate-100 rounded-2xl p-5 text-center">
+            <div class="text-xs uppercase text-slate-500 tracking-wide">
+              Current Bid
             </div>
-          <div>
-            <label for="bidStep" class="text-xs text-slate-500">Bid Increment</label>
-            <input id="bidStep" type="number" class="w-full mt-1 rounded-xl border-slate-300" value="50000" min="1" inputmode="numeric" aria-describedby="bidStepHelp" />
-            <div id="bidStepHelp" class="sr-only">Enter the increment for bids</div>
+            <div id="currentBidDisplay"
+                 class="text-3xl font-bold mt-2">
+              ₹ 0
+            </div>
           </div>
-          <div>
-            <label for="currentBid" class="text-xs text-slate-500">Current Bid</label>
-            <input id="currentBid" type="number" class="w-full mt-1 rounded-xl border-slate-300" readonly aria-readonly="true" />
+
+          <!-- INCREMENT -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5">
+            <div class="text-xs uppercase text-slate-500 tracking-wide">
+              Bid Increment
+            </div>
+            <input id="bidStep"
+                   type="number"
+                   class="w-full mt-3 rounded-xl border-slate-300 text-center font-semibold text-lg"
+                   value="50000" />
+          </div>
+
+          <!-- TIMER -->
+          <div class="bg-white border border-slate-200 rounded-2xl p-5 text-center">
+            <div class="text-xs uppercase text-slate-500 tracking-wide">
+              Timer
+            </div>
+            <div id="countdown"
+                 class="text-3xl font-bold mt-2">
+              —
+            </div>
+            <button id="btnCancelTimer"
+                    class="mt-3 text-xs text-slate-500 underline">
+              Cancel
+            </button>
+          </div>
+
+        </div>
+
+        <!-- BIDDING PANEL -->
+        <div>
+          <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-600 mb-4">
+            Place Bid
+          </h3>
+          <div id="bidTeamsContainer"
+               class="grid grid-cols-2 md:grid-cols-3 gap-4">
           </div>
         </div>
-        <div class="flex items-center gap-2 mt-2">
-          <button id="btnSell" class="px-3 py-2 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700" aria-disabled="false">Sell</button>
-          <div class="ml-auto flex items-center gap-2" aria-live="polite" aria-atomic="true">
-            <span class="text-sm text-slate-600">Timer:</span>
-            <span id="countdown" class="px-3 py-1.5 rounded-xl border border-slate-300">—</span>
-            <button id="btnCancelTimer" class="px-2 py-1 rounded-lg border border-slate-300 text-xs">Cancel</button>
-          </div>
-        </div>
-        <div id="warn" class="text-sm text-rose-600" role="alert" aria-live="assertive"></div>
+
       </div>
+
     </div>
-    <!-- Remaining in Category -->
-    <div class="bg-white rounded-2xl border border-slate-200 p-4">
-      <h3 class="font-semibold mb-2">Remaining in Category <span id="remainCat">BP: 4</span> (<span id="remainCount">0</span>)</h3>
-      <div id="remainList" class="grid sm:grid-cols-2 md:grid-cols-3 gap-2 text-sm"></div>
-    </div>
-  </section>
-  <!-- RIGHT: Teams & Results -->
-  <aside class="space-y-4">
-    <div class="bg-white rounded-2xl border border-slate-200 p-4">
-      <div class="flex items-center justify-between mb-2">
-        <h3 class="font-semibold">Team Budgets</h3>
-        <div class="text-xs text-slate-500">Click a value to edit inline</div>
-      </div>
-      <div id="teamsTable" class="divide-y"></div>
-    </div>
-    <div class="bg-white rounded-2xl border border-slate-200 p-4">
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold">Results (Live)</h3>
-        <button id="btnToggleResults" class="text-sm underline" aria-pressed="true">Toggle</button>
-      </div>
-      <div id="results" class="mt-3 space-y-3"></div>
-    </div>
-  </aside>
+  </div>
+
 </main>
-<!-- SCRIPT -->
+
 <script>
 (() => {
-  'use strict';
-  // -- Cached DOM elements --
-  const dom = {
-    teamsTable: document.getElementById('teamsTable'),
-    results: document.getElementById('results'),
-    remainCat: document.getElementById('remainCat'),
-    remainCount: document.getElementById('remainCount'),
-    remainList: document.getElementById('remainList'),
-    currentPlayerCard: document.getElementById('currentPlayerCard'),
-    playerImg: document.getElementById('playerImg'),
-    playerName: document.getElementById('playerName'),
-    playerCat: document.getElementById('playerCat'),
-    playerPosition: document.getElementById('playerPosition'),
-    playerBase: document.getElementById('playerBase'),
-    currentBid: document.getElementById('currentBid'),
-    countdown: document.getElementById('countdown'),
-    warn: document.getElementById('warn'),
-    bidTeamsContainer: document.getElementById('bidTeamsContainer'),
-    btnNext: document.getElementById('btnNext'),
-    btnSkip: document.getElementById('btnSkip'),
-    btnSell: document.getElementById('btnSell'),
-    btnCancelTimer: document.getElementById('btnCancelTimer'),
-    btnSaveState: document.getElementById('btnSaveState'),
-    btnExportCSV: document.getElementById('btnExportCSV'),
-    btnResetAll: document.getElementById('btnResetAll'),
-    btnUndo: document.getElementById('btnUndo'),
-    btnToggleResults: document.getElementById('btnToggleResults'),
-    fileLoadState: document.getElementById('fileLoadState'),
-    btnAuctionUnsold: document.getElementById('btnAuctionUnsold'),
-    catButtons: document.querySelectorAll('.catBtn'),
-    bidStepInput: document.getElementById('bidStep'),
-  };
 
-  // -- Constants --
-  const CATEGORY_LABELS = {
-    A: 'BP: 6',
-    B: 'BP: 3 & 5',
-    UNSOLD: 'UnSold',
-    GK: 'BP: 4',
-  };
-
-  // -- Data you can edit --
   const TEAMS = [
-    { name: 'Ayon Roy', budget: 4000000 },
-    { name: 'Subhojit Dutta', budget: 4000000 },
-    { name: 'Ritam Chowdhury', budget: 4000000 },
-    { name: 'Shubhanjan Basu', budget: 4000000 },
-    { name: 'Srinjoy Kundu', budget: 4000000 },
-    { name: 'Subhamoy Das', budget: 4000000 },
+    { name: "Ayon Roy", budget: 4000000 },
+    { name: "Subhojit Dutta", budget: 4000000 },
+    { name: "Ritam Chowdhury", budget: 4000000 },
+    { name: "Shubhanjan Basu", budget: 4000000 },
+    { name: "Srinjoy Kundu", budget: 4000000 },
+    { name: "Subhamoy Das", budget: 4000000 },
   ];
 
-  const PLAYERS = {
-    GK: [
-      { id: 'gk1', name: 'Aditya Chakraborty', basePrice: 400000, img: 'Aditya.jpg', position: 'Goalkeeper' },
-      { id: 'gk2', name: 'Arko Dutta', basePrice: 400000, img: 'Arka.jpg', position: 'Goalkeeper' },
-      { id: 'gk3', name: 'Arnab Talukdar', basePrice: 400000, img: 'Arnab.jpg', position: 'Goalkeeper' },
-      { id: 'gk4', name: 'Dhruv', basePrice: 400000, img: 'Dhruv.jpg', position: 'Goalkeeper' },
-      { id: 'gk5', name: 'Rupayan Chakraborty', basePrice: 400000, img: 'Rupayan.jpg', position: 'Goalkeeper' },
-      { id: 'gk6', name: 'Soumadeep Dutta', basePrice: 400000, img: 'Soumodeep.jpg', position: 'Goalkeeper' },
-    ],
-    A: [
-      { id: 'a1', name: 'Soumik Mukherjee', basePrice: 600000, img: 'Soumik.jpg', position: 'Defence' },
-      { id: 'a2', name: 'Suvam Chakraborty', basePrice: 600000, img: 'Suvam.jpg', position: 'Defence' },
-      { id: 'a3', name: 'Jeffin Mathew', basePrice: 600000, img: 'Jeff.jpg', position: 'Midfield' },
-      { id: 'a4', name: 'Risove Show', basePrice: 600000, img: 'Risove.jpg', position: 'Midfield' },
-      { id: 'a5', name: 'Vasu Gupta', basePrice: 600000, img: 'Vasu.jpg', position: 'Striker' },
-    ],
-    B: [
-      { id: 'r1', name: 'Rahul Sarkar', position: 'Defence', basePrice: 500000, img: 'Rahul.jpg' },
-      { id: 'a1', name: 'Akash Mukherjee', position: 'Midfield', basePrice: 500000, img: 'AkashM.jpg' },
-      { id: 'b1', name: '... Biswajit Karmakar', position: 'Midfield', basePrice: 500000, img: 'Biswajit.jpg' },
-      { id: 'k1', name: 'Krishnendu Mondal', position: 'Midfield', basePrice: 500000, img: 'Krishnendu.jpg' },
-      { id: 'ar1', name: 'Aritra Adhikari', position: 'Striker', basePrice: 500000, img: 'Aritra.jpg' },
-      { id: 's1', name: 'Sourav Acharya', position: 'Striker', basePrice: 500000, img: 'SouravA.jpg' },
-      { id: 'su1', name: 'Supratim Sengupta', position: 'Striker', basePrice: 500000, img: 'Supratim.jpg' },
-      { id: 'pr1', name: 'Proloy Malik', position: 'Defence', basePrice: 500000, img: 'Proloy.jpg' },
-      { id: 'pu1', name: 'Pulak Dowari', position: 'Defence', basePrice: 500000, img: 'Pulak.jpg' },
-      { id: 'sa1', name: 'Sanchay Bose', position: 'Defence', basePrice: 500000, img: 'Sanchay.jpg' },
-      { id: 'si1', name: 'Siddhant Ameria', position: 'Midfield', basePrice: 500000, img: 'Siddhant.jpg' },
-      { id: 'so1', name: 'Sourav Das', position: 'Midfield', basePrice: 500000, img: 'SouravD.jpg' },
-      { id: 'k2', name: 'Kaustav Guha Mazumdar', position: 'Striker', basePrice: 500000, img: 'Kaustav.jpg' },
-      { id: 'sh1', name: 'Shivaditya Gunin', position: 'Striker', basePrice: 500000, img: 'Shivaditya.jpg' },
-      { id: 'am1', name: 'Aman Pandey', position: 'Defence', basePrice: 500000, img: 'Aman.jpg' },
-      { id: 'ay1', name: 'Ayan Das', position: 'Defence', basePrice: 300000, img: 'Ayan.jpg' },
-      { id: 'k3', name: 'Kingshuk Banerjee', position: 'Midfield', basePrice: 300000, img: 'Kingshuk.jpg' },
-      { id: 'ar2', name: 'Arghadeep Das', position: 'Defence', basePrice: 300000, img: 'Arghadeep.jpg' },
-      { id: 'di1', name: 'Dibwayan Trivedi', position: 'Defence', basePrice: 300000, img: 'Dibyawan.jpg' },
-      { id: 'di2', name: 'Dipanjan Mazumder', position: 'Defence', basePrice: 300000, img: 'Dipanjan.jpg' },
-      { id: 'sa2', name: 'Satyaki Sarkar', position: 'Defence', basePrice: 300000, img: 'Satyaki.jpg' },
-      { id: 'ya1', name: 'Yash Agarwal', position: 'Defence', basePrice: 300000, img: 'Yash.jpg' },
-      { id: 'su2', name: 'Subhayan Banerjee', position: 'Defence', basePrice: 300000, img: 'Subhayan.jpg' },
-      { id: 'an1', name: 'Ankit Aich', position: 'Defence', basePrice: 300000, img: 'Ankit.jpg' },
-      { id: 'sa3', name: 'Sagnik Chakraborty', position: 'Midfield', basePrice: 300000, img: 'Sagnik.jpg' },
-      { id: 'sh2', name: 'Shardendu Lahiri', position: 'Midfield', basePrice: 300000, img: 'Shardendu.jpg' },
-    ],
-  };
+  const PLAYERS = [
+    { id: "gk1", name: "Rupayan Chakraborty", basePrice: 400000, category: "BP: 4", position: "Goalkeeper" }
+  ];
 
-  // -- State --
   const state = {
-    category: 'GK',
-    pools: { GK: [], A: [], B: [], UNSOLD: [] },
-    skipped: { GK: [], A: [], B: [], UNSOLD: [] },
     current: null,
-    teams: [],
-    sales: [],
-    timer: { handle: null, left: 0, running: false },
+    teams: TEAMS.map(t => ({...t})),
+    timer: { handle: null, left: 0, running: false }
   };
 
-  // -- Utility Functions --
-  function fmt(num) {
-    return new Intl.NumberFormat('en-IN').format(num);
-  }
-  function catLabel(cat) {
-    return CATEGORY_LABELS[cat] || 'Unknown';
+  const dom = {
+    card: document.getElementById("currentPlayerCard"),
+    playerName: document.getElementById("playerName"),
+    playerCat: document.getElementById("playerCat"),
+    playerPosition: document.getElementById("playerPosition"),
+    playerBase: document.getElementById("playerBase"),
+    bidTeamsContainer: document.getElementById("bidTeamsContainer"),
+    currentBidDisplay: document.getElementById("currentBidDisplay"),
+    bidStepInput: document.getElementById("bidStep"),
+    countdown: document.getElementById("countdown"),
+    btnCancelTimer: document.getElementById("btnCancelTimer")
+  };
+
+  function fmt(n){ return new Intl.NumberFormat("en-IN").format(n); }
+
+  function loadPlayer(){
+    const p = PLAYERS[0];
+    state.current = { player: p, bid: p.basePrice, bidder: null };
+    dom.card.hidden = false;
+
+    dom.playerName.textContent = p.name;
+    dom.playerCat.textContent = p.category;
+    dom.playerPosition.textContent = p.position;
+    dom.playerBase.textContent = "₹ " + fmt(p.basePrice);
+
+    render();
   }
 
-  // -- Clone initial data to state --
-  function cloneData() {
-    state.teams = TEAMS.map((t) => ({ ...t }));
-    state.pools.GK = PLAYERS.GK.map((p) => ({ ...p }));
-    state.pools.A = PLAYERS.A.map((p) => ({ ...p }));
-    state.pools.B = PLAYERS.B.map((p) => ({ ...p }));
-    state.pools.UNSOLD = [];
-    state.skipped = { GK: [], A: [], B: [], UNSOLD: [] };
-    state.category = 'GK';
-    state.current = null;
-    state.sales = [];
-    cancelTimer();
-    renderAll();
+  function render(){
+    dom.currentBidDisplay.textContent = "₹ " + fmt(state.current.bid);
+    renderButtons();
   }
 
-  // -- Rendering --
-  function renderAll() {
-    renderTeams();
-    renderResults();
-    renderRemain();
-    renderCurrent();
-    highlightCat();
-  }
-  function highlightCat() {
-    dom.catButtons.forEach((btn) => {
-      if (btn.dataset.cat === state.category) {
-        btn.classList.add('bg-slate-900', 'text-white');
-        btn.setAttribute('aria-selected', 'true');
-        btn.setAttribute('tabindex', '0');
-      } else {
-        btn.classList.remove('bg-slate-900', 'text-white');
-        btn.setAttribute('aria-selected', 'false');
-        btn.setAttribute('tabindex', '-1');
+  function renderButtons(){
+    dom.bidTeamsContainer.innerHTML = "";
+
+    state.teams.forEach((team, i)=>{
+      const btn = document.createElement("button");
+      btn.className = `
+        h-16 rounded-2xl text-white font-semibold text-base
+        shadow-md transition-all duration-200
+        flex items-center justify-center
+        bg-indigo-600 hover:bg-indigo-700
+      `;
+
+      if(state.current.bidder === i){
+        btn.classList.remove("bg-indigo-600");
+        btn.classList.add("bg-emerald-600");
       }
-    });
-    dom.remainCat.textContent = catLabel(state.category);
-  }
-  function renderTeams() {
-    dom.teamsTable.innerHTML = '';
-    state.teams.forEach((team, i) => {
-      const row = document.createElement('div');
-      row.className = 'py-2 flex items-center justify-between gap-3';
-      row.innerHTML = `<div class="font-medium">${team.name}</div><div class="text-right"><div class="text-xs text-slate-500">Remaining</div><div class="font-semibold"><button data-edit-team="${i}" class="editable underline-offset-2 hover:underline">₹ <span>${fmt(
-        team.budget
-      )}</span></button></div></div>`;
-      dom.teamsTable.appendChild(row);
-      row.querySelector('[data-edit-team]').addEventListener('click', () => {
-        const currentBudget = state.teams[i].budget;
-        const input = prompt(`Edit remaining budget for ${team.name}`, currentBudget);
-        if (input === null) return;
-        const newVal = Number(input);
-        if (!isNaN(newVal) && newVal >= 0) {
-          state.teams[i].budget = Math.floor(newVal);
-          renderTeams();
-          renderBidButtons();
-          renderResults();
-        }
-      });
-    });
-  }
-  function renderResults() {
-    // Group sales by team
-    const byTeam = new Map(state.teams.map((t, i) => [i, { teamName: t.name, players: [], spent: 0 }]));
-    state.sales.forEach((sale) => {
-      const teamData = byTeam.get(sale.teamIndex);
-      if (teamData) {
-        teamData.players.push(sale);
-        teamData.spent += sale.price;
-      }
-    });
-    dom.results.innerHTML = '';
-    if (dom.btnToggleResults.dataset.hidden === '1') {
-      return; // Hide results
-    }
-    byTeam.forEach((teamData, idx) => {
-      const container = document.createElement('div');
-      container.className = 'rounded-xl border border-slate-200 p-3 mb-4';
-      const spentFormatted = fmt(teamData.spent);
-      const budgetLeftFormatted = fmt(state.teams[idx].budget);
-      const playerListHtml =
-        teamData.players.length === 0
-          ? '<li class="text-slate-500 text-sm">No players yet</li>'
-          : teamData.players
-              .map(
-                (p) =>
-                  `<li class="flex justify-between"> <span>${p.playerName} <span class="text-xs text-slate-500">(${catLabel(
-                    p.category
-                  )})</span></span> <span>₹ ${fmt(p.price)}</span> </li>`
-              )
-              .join('');
-      container.innerHTML = `<div class="flex items-center justify-between mb-2"> <div class="font-semibold">${teamData.teamName}</div> <div class="text-sm text-slate-600">Spent: <strong>₹ ${spentFormatted}</strong> &bull; Left: <strong>₹ ${budgetLeftFormatted}</strong></div> </div> <ul class="space-y-1 list-disc pl-5">${playerListHtml}</ul>`;
-      dom.results.appendChild(container);
-    });
-    // Unsold players section
-    const unsoldPlayers = state.pools.UNSOLD;
-    const unsoldSection = document.createElement('div');
-    unsoldSection.className = 'rounded-xl border border-rose-300 p-3 bg-rose-50';
-    unsoldSection.innerHTML = `<h4 class="font-semibold text-rose-700 mb-2">UnSold Players</h4> <ul class="list-disc pl-5 space-y-1"> ${
-      unsoldPlayers.length > 0
-        ? unsoldPlayers
-            .map(
-              (p) =>
-                `<li>${p.name} <span class="text-xs text-slate-500">(${p.position || 'N/A'})</span> &mdash; ₹ ${fmt(
-                  p.basePrice
-                )}</li>`
-            )
-            .join('')
-        : '<li class="text-slate-500 text-sm">No unsold players</li>'
-    } </ul>`;
-    dom.results.appendChild(unsoldSection);
-  }
-  function renderRemain() {
-    const pool = [...(state.pools[state.category] || []), ...(state.skipped[state.category] || [])];
-    dom.remainCount.textContent = pool.length;
-    dom.remainList.innerHTML = pool
-      .map(
-        (p) =>
-          `<div class="rounded-lg border border-slate-200 p-2">${p.name}<div class="text-xs text-slate-500">₹ ${fmt(
-            p.basePrice
-          )}</div></div>`
-      )
-      .join('');
-  }
-  function renderCurrent() {
-    if (!state.current) {
-      dom.currentPlayerCard.hidden = true;
-      return;
-    }
-    dom.currentPlayerCard.hidden = false;
-    const { player, category, bid } = state.current;
-    dom.playerImg.src =
-      player.img || 'https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=800&auto=format&fit=crop';
-    dom.playerName.textContent = player.name;
-    dom.playerCat.textContent = catLabel(category);
-    dom.playerPosition.textContent = player.position || '';
-    dom.playerBase.textContent = '₹ ' + fmt(player.basePrice);
-    dom.currentBid.value = bid;
-    if (state.timer.running) {
-      dom.countdown.textContent = state.timer.left + 's';
-      dom.countdown.classList.toggle('blink', state.timer.left <= 10);
-    } else {
-      dom.countdown.textContent = '—';
-      dom.countdown.classList.remove('blink');
-    }
-    renderBidButtons();
-    updateButtonStates();
-    clearWarn();
-  }
-  // Render bid buttons for all teams, enable/disable based on budget & next bid
-  function renderBidButtons() {
-    const container = dom.bidTeamsContainer;
-    container.innerHTML = '';
-    if (!state.current) return;
-    const step = Math.max(1, Number(dom.bidStepInput.value) || 0);
-    const currentBid = state.current.bid;
-    const hasBidder = state.current.bidder !== null;
-    state.teams.forEach((team, i) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = `group  h-14  rounded-2xl  bg-gradient-to-r from-indigo-600 to-indigo-700  hover:from-indigo-700 hover:to-indigo-800  text-white  font-semibold  text-sm  tracking-wide  shadow-md  hover:shadow-lg  transition-all  duration-200  flex  items-center  justify-center`;
+
       btn.textContent = team.name;
-      btn.setAttribute('aria-label', `Place bid for ${team.name}`);
-      const nextBid = !hasBidder ? currentBid : currentBid + step;
-      if (nextBid > team.budget) {
-        btn.disabled = true;
-      }
-      btn.addEventListener('click', () => placeBid(i));
-      container.appendChild(btn);
+      btn.onclick = ()=>placeBid(i);
+      dom.bidTeamsContainer.appendChild(btn);
     });
   }
-  function updateButtonStates() {
-    const disable = !!state.timer.running;
-    dom.btnNext.disabled = disable;
-    dom.btnSkip.disabled = disable;
-    dom.btnSell.disabled = !state.current || state.current.bidder === null;
+
+  function placeBid(i){
+    const step = Number(dom.bidStepInput.value);
+    const next = state.current.bidder === null ? state.current.bid : state.current.bid + step;
+
+    if(next > state.teams[i].budget) return;
+
+    state.current.bid = next;
+    state.current.bidder = i;
+    startTimer();
+    render();
   }
 
-  // === Actions ===
-  function setCategory(cat) {
-    if (state.timer.running && !confirm('Timer running! Switch category anyway?')) return;
-    if (state.timer.running) cancelTimer();
-    state.category = cat;
-    renderAll();
-  }
-  function nextPlayer() {
-    if (state.current) {
-      // Return current player to appropriate pool
-      const { player, category, bidder } = state.current;
-      if (bidder === null) {
-        state.pools[category].push(player);
-      } else {
-        state.skipped[category].push(player);
-      }
-      state.current = null;
-      cancelTimer();
-    }
-    const pool = state.pools[state.category];
-    const skipped = state.skipped[state.category];
-    const merged = [...pool, ...skipped];
-    if (merged.length === 0) {
-      alert('No players left in this category.');
-      return;
-    }
-    const idx = Math.floor(Math.random() * merged.length);
-    const selected = merged[idx];
-    const fromPool = pool.find((p) => p.id === selected.id) ? pool : skipped;
-    const rmIndex = fromPool.findIndex((p) => p.id === selected.id);
-    fromPool.splice(rmIndex, 1);
-    state.current = { player: selected, category: state.category, bid: selected.basePrice, bidder: null };
-    cancelTimer();
-    renderAll();
-  }
-  function skipPlayer() {
-    if (!state.current) {
-      alert('No active player to skip.');
-      return;
-    }
-    if (state.current.bidder === null) {
-      state.current.player.basePrice = 50000;
-      state.pools.UNSOLD.push(state.current.player);
-    } else {
-      state.skipped[state.current.category].push(state.current.player);
-    }
-    state.current = null;
-    cancelTimer();
-    renderAll();
-  }
-  function placeBid(teamIndex) {
-    if (!state.current) {
-      alert('No active player. Click Next Player.');
-      return;
-    }
-    const step = Math.max(1, Number(dom.bidStepInput.value) || 0);
-    const team = state.teams[teamIndex];
-    const nextBid = state.current.bidder === null ? state.current.bid : state.current.bid + step;
-    if (nextBid > team.budget) {
-      showWarn(`Insufficient budget for ${team.name}.`);
-      return;
-    }
-    state.current.bid = nextBid;
-    state.current.bidder = teamIndex;
-    startOrResetTimer();
-    renderCurrent();
-  }
-  function sell() {
-    if (!state.current) {
-      alert('No active player.');
-      return;
-    }
-    if (state.current.bidder === null) {
-      alert('No bids yet. Cannot sell.');
-      return;
-    }
-    const { player, category, bid, bidder } = state.current;
-    state.teams[bidder].budget -= bid;
-    state.sales.push({
-      timeISO: new Date().toISOString(),
-      team: state.teams[bidder].name,
-      teamIndex: bidder,
-      playerId: player.id,
-      playerName: player.name,
-      category,
-      price: bid,
-      position: player.position || '',
-    });
-    // Clear current player and stop timer
-    state.current = null;
-    cancelTimer();
-    // Save updated data to localStorage for captain dashboards
-    localStorage.setItem('auctionSales', JSON.stringify(state.sales));
-    localStorage.setItem('auctionBudgets', JSON.stringify(state.teams.map((t) => t.budget)));
-    // Broadcast updates to other tabs if supported
-    if (window.BroadcastChannel) {
-      const channel = new BroadcastChannel('auction_updates');
-      channel.postMessage({ sales: state.sales, budgets: state.teams.map((t) => t.budget) });
-    }
-    renderAll();
-  }
-  function undoLastSale() {
-    const last = state.sales.pop();
-    if (!last) {
-      alert('No sales yet.');
-      return;
-    }
-    state.teams[last.teamIndex].budget += last.price;
-    const orig = findPlayerInMaster(last.playerId, last.category);
-    if (orig) {
-      state.pools[last.category].push({ ...orig });
-    }
-    renderAll();
-  }
-  function findPlayerInMaster(id, cat) {
-    return (PLAYERS[cat] || []).find((p) => p.id === id) || null;
-  }
-
-  // -- Timer Management --
-  function startOrResetTimer() {
+  function startTimer(){
     state.timer.left = 45;
-    if (!state.timer.running) {
+    if(!state.timer.running){
       state.timer.running = true;
-      state.timer.handle = setInterval(() => {
-        state.timer.left -= 1;
-        if (state.timer.left <= 0) {
-          autoSellOnTimer();
+      state.timer.handle = setInterval(()=>{
+        state.timer.left--;
+        dom.countdown.textContent = state.timer.left + "s";
+        if(state.timer.left <= 0){
+          clearInterval(state.timer.handle);
+          state.timer.running = false;
         }
-        renderCurrent();
-      }, 1000);
-    }
-    dom.btnNext.disabled = true;
-    dom.btnSkip.disabled = true;
-    updateButtonStates();
-  }
-  function cancelTimer() {
-    if (state.timer.handle) {
-      clearInterval(state.timer.handle);
-    }
-    state.timer = { handle: null, left: 0, running: false };
-    dom.btnNext.disabled = false;
-    dom.btnSkip.disabled = false;
-    updateButtonStates();
-  }
-  function autoSellOnTimer() {
-    cancelTimer();
-    if (!state.current) return;
-    if (state.current.bidder === null) {
-      alert('Timer ended but no bids. Player remains unsold.');
-      return;
-    }
-    sell();
-  }
-
-  // -- Utilities --
-  let warnTimeout = null;
-  function showWarn(message) {
-    dom.warn.textContent = message;
-    if (warnTimeout) clearTimeout(warnTimeout);
-    warnTimeout = setTimeout(() => {
-      dom.warn.textContent = '';
-      warnTimeout = null;
-    }, 2500);
-  }
-  function clearWarn() {
-    if (warnTimeout) {
-      clearTimeout(warnTimeout);
-      dom.warn.textContent = '';
-      warnTimeout = null;
+      },1000);
     }
   }
 
-  // -- Export & Save / Load --
-  function exportCSV() {
-    const rows = [];
-    state.teams.forEach((team, idx) => {
-      rows.push([`Team: ${team.name}`, '', '', '', '']);
-      rows.push(['Time', 'Player', 'Category', 'Position', 'Price']);
-      const teamSales = state.sales.filter((s) => s.teamIndex === idx);
-      teamSales.forEach((s) => {
-        rows.push([s.timeISO, s.playerName, catLabel(s.category), s.position || '', String(s.price)]);
-      });
-      rows.push([]);
-    });
-    const csvContent = rows.map((r) => r.map((v) => `"${v.replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'auction-results-teamwise.csv';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-  function saveState() {
-    const snapshot = {
-      state,
-      savedAt: new Date().toISOString(),
-      note: 'Football Auctioneer snapshot',
-    };
-    const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'auction-state.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  }
-  function loadState(fileList) {
-    const file = fileList[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        if (!data || !data.state) throw new Error('Invalid auction state file.');
-        Object.assign(state, {
-          category: data.state.category,
-          pools: data.state.pools,
-          skipped: data.state.skipped,
-          current: data.state.current,
-          teams: data.state.teams,
-          sales: data.state.sales,
-          timer: { handle: null, left: 0, running: false },
-        });
-        cancelTimer();
-        renderAll();
-      } catch (err) {
-        alert(`Failed to load state: ${err.message}`);
-      }
-    };
-    reader.readAsText(file);
-  }
+  dom.btnCancelTimer.onclick = ()=>{
+    clearInterval(state.timer.handle);
+    state.timer.running = false;
+    dom.countdown.textContent = "—";
+  };
 
-  // -- Event wiring --
-  // Category buttons
-  dom.catButtons.forEach((btn) => {
-    btn.addEventListener('click', () => setCategory(btn.dataset.cat));
-  });
-  dom.btnNext.addEventListener('click', nextPlayer);
-  dom.btnSkip.addEventListener('click', skipPlayer);
-  dom.btnSell.addEventListener('click', sell);
-  dom.btnUndo.addEventListener('click', undoLastSale);
-  dom.btnCancelTimer.addEventListener('click', cancelTimer);
-  dom.btnExportCSV.addEventListener('click', exportCSV);
-  dom.btnSaveState.addEventListener('click', saveState);
-  dom.fileLoadState.addEventListener('change', (e) => {
-    loadState(e.target.files);
-    e.target.value = '';
-  });
-  dom.btnResetAll.addEventListener('click', () => {
-    if (confirm('Reset everything to initial data?')) cloneData();
-  });
-  dom.btnToggleResults.addEventListener('click', (e) => {
-    const hide = e.currentTarget.dataset.hidden === '1';
-    e.currentTarget.dataset.hidden = hide ? '0' : '1';
-    dom.btnToggleResults.setAttribute('aria-pressed', String(!hide));
-    renderResults();
-  });
+  loadPlayer();
 
-  // -- Initialize App --
-  cloneData();
 })();
 </script>
+
 </body>
 </html>
