@@ -1,5 +1,3 @@
-let AUCTION_DATA = null;
-
 function setCategory(cat) {
   if (state.timer.running && !confirm('Timer running! Switch category anyway?')) {
     return;
