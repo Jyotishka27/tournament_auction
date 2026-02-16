@@ -3,6 +3,36 @@
 // ===============================
 
 // -------------------------------
+// Load initial auction data
+// -------------------------------
+async function loadAuctionData() {
+  try {
+    const response = await fetch('./data/auction-data.json');
+
+    if (!response.ok) {
+      throw new Error('Failed to load auction data');
+    }
+
+    const data = await response.json();
+
+    // Initialize base auction state
+    state.pools = data.pools || {};
+    state.teams = data.teams || [];
+    state.category = data.category || null;
+
+    // Reset runtime values
+    state.sales = [];
+    state.skipped = [];
+    state.current = null;
+    state.timer = { handle: null, left: 0, running: false };
+
+  } catch (err) {
+    console.error('Auction data load error:', err);
+  }
+}
+
+
+// -------------------------------
 // Export auction results as CSV
 // -------------------------------
 function exportCSV() {
@@ -39,6 +69,7 @@ function exportCSV() {
   link.remove();
 }
 
+
 // -------------------------------
 // Manual save auction state
 // -------------------------------
@@ -68,6 +99,7 @@ function saveState() {
   link.remove();
 }
 
+
 // -------------------------------
 // Load auction state from file
 // -------------------------------
@@ -96,6 +128,7 @@ function loadState(fileList) {
 
       cancelTimer();
       renderAll();
+
     } catch (err) {
       alert(`Failed to load state: ${err.message}`);
     }
@@ -103,4 +136,3 @@ function loadState(fileList) {
 
   reader.readAsText(file);
 }
-
