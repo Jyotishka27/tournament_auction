@@ -210,20 +210,21 @@ function wireEvents() {
     });
   });
 
-  // Main control buttons
-  document.getElementById('btnNext').addEventListener('click', nextPlayer);
-  document.getElementById('btnSkip').addEventListener('click', skipPlayer);
-  document.getElementById('btnSell').addEventListener('click', sell);
+  const btnNext = document.getElementById('btnNext');
+  const btnSkip = document.getElementById('btnSkip');
+  const btnSell = document.getElementById('btnSell');
+  const btnToggle = document.getElementById('btnToggleResults');
 
-  // Toggle results
-  document.getElementById('btnToggleResults').addEventListener('click', (e) => {
-    const btn = e.target;
-    const hidden = btn.dataset.hidden === '1';
+  if (btnNext) btnNext.addEventListener('click', nextPlayer);
+  if (btnSkip) btnSkip.addEventListener('click', skipPlayer);
+  if (btnSell) btnSell.addEventListener('click', sell);
 
-    btn.dataset.hidden = hidden ? '0' : '1';
-    renderResults();
-  });
+  if (btnToggle) {
+    btnToggle.addEventListener('click', (e) => {
+      const hidden = btnToggle.dataset.hidden === '1';
+      btnToggle.dataset.hidden = hidden ? '0' : '1';
+      renderResults();
+    });
+  }
 
 }
-
-
