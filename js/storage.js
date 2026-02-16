@@ -1,40 +1,38 @@
-// ===============================
-// storage.js
-// ===============================
-
-// -------------------------------
-// Load initial auction data
-// -------------------------------
 async function loadAuctionData() {
   try {
     const response = await fetch('./data/auction-data.json');
-
     if (!response.ok) {
       throw new Error('Failed to load auction data');
     }
 
     const data = await response.json();
 
-    // Initialize base auction state
-    state.pools = data.pools || {};
+    // Initialize with proper structure
+    state.pools = data.pools || { X: [], P: [], A: [], B: [], C: [], UNSOLD: [] };
     state.teams = data.teams || [];
-    state.category = data.category || null;
+    state.category = data.category || 'X';
+    
+    // CRITICAL: Initialize skipped pools
+    state.skipped = { X: [], P: [], A: [], B: [], C: [], UNSOLD: [] };
 
-    // Reset runtime values
+    // Reset runtime
     state.sales = [];
-    state.skipped = [];
     state.current = null;
     state.timer = { handle: null, left: 0, running: false };
 
+    console.log('✅ Auction data loaded successfully');
   } catch (err) {
-    console.error('Auction data load error:', err);
+    console.error('❌ Auction data load error:', err);
+    alert('⚠️ Using fallback state - please check auction-data.json');
+    
+    // Fallback
+    state.pools = { X: [], P: [], A: [], B: [], C: [], UNSOLD: [] };
+    state.skipped = { X: [], P: [], A: [], B: [], C: [], UNSOLD: [] };
+    state.category = 'X';
+    state.teams = [];
   }
 }
 
-
-// -------------------------------
-// Export auction results as CSV
-// -------------------------------
 function exportCSV() {
   const rows = [];
 
@@ -53,7 +51,7 @@ function exportCSV() {
       ]);
     });
 
-    rows.push([]); // empty line between teams
+    rows.push([]); 
   });
 
   const csvContent = rows
@@ -63,16 +61,10 @@ function exportCSV() {
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'auction-results-teamwise.csv';
-  document.body.appendChild(link);
+  link.download = `auction-results-${new Date().toISOString().split('T')[0]}.csv`;
   link.click();
-  link.remove();
 }
 
-
-// -------------------------------
-// Manual save auction state
-// -------------------------------
 function saveState() {
   const snapshot = {
     state: {
@@ -83,56 +75,14 @@ function saveState() {
       teams: state.teams,
       sales: state.sales
     },
-    savedAt: new Date().toISOString(),
-    note: 'Football Auctioneer snapshot'
+    savedAt: new Date().toISOString()
   };
 
   const blob = new Blob([JSON.stringify(snapshot, null, 2)], {
     type: 'application/json'
   });
-
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = 'auction-state.json';
-  document.body.appendChild(link);
+  link.download = `auction-state-${new Date().toISOString().split('T')[0]}.json`;
   link.click();
-  link.remove();
-}
-
-
-// -------------------------------
-// Load auction state from file
-// -------------------------------
-function loadState(fileList) {
-  const file = fileList[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const data = JSON.parse(reader.result);
-
-      if (!data || !data.state) {
-        throw new Error('Invalid auction state file.');
-      }
-
-      Object.assign(state, {
-        category: data.state.category,
-        pools: data.state.pools,
-        skipped: data.state.skipped,
-        current: data.state.current,
-        teams: data.state.teams,
-        sales: data.state.sales,
-        timer: { handle: null, left: 0, running: false }
-      });
-
-      cancelTimer();
-      renderAll();
-
-    } catch (err) {
-      alert(`Failed to load state: ${err.message}`);
-    }
-  };
-
-  reader.readAsText(file);
 }
