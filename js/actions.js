@@ -1,8 +1,3 @@
-// ===============================
-// COMPLETE actions.js - FIXED & PRODUCTION READY
-// ===============================
-
-// Make AUCTION_DATA globally available (from storage.js)
 let AUCTION_DATA = null;
 
 function setCategory(cat) {
