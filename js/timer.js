@@ -1,16 +1,8 @@
-// ===============================
-// timer.js
-// ===============================
-
-// -------------------------------
-// Start or reset auction timer
-// -------------------------------
 function startOrResetTimer() {
   state.timer.left = 45;
 
   if (!state.timer.running) {
     state.timer.running = true;
-
     state.timer.handle = setInterval(() => {
       state.timer.left -= 1;
 
@@ -26,9 +18,6 @@ function startOrResetTimer() {
   updateButtonStates();
 }
 
-// -------------------------------
-// Cancel timer safely
-// -------------------------------
 function cancelTimer() {
   if (state.timer.handle) {
     clearInterval(state.timer.handle);
@@ -44,9 +33,6 @@ function cancelTimer() {
   renderCurrent();
 }
 
-// -------------------------------
-// Auto-sell when timer expires
-// -------------------------------
 function autoSellOnTimer() {
   cancelTimer();
 
@@ -59,4 +45,3 @@ function autoSellOnTimer() {
 
   sell();
 }
-
