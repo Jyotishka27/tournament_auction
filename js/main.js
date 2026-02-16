@@ -1,8 +1,10 @@
 (async function initAuction() {
 
-  const restored = restoreAutoSavedState();
-  if (!restored) cloneData();
+  await loadAuctionData();   // Load base data first
+
+  const restored = restoreAutoSavedState();  // Then restore if exists
 
   wireEvents();
   renderAll();
+
 })();
