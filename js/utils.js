@@ -13,3 +13,17 @@ function applyUnsoldReduction(player) {
     MIN_PRICE
   );
 }
+
+function clearWarn() {
+  const warnEl = document.getElementById('warn');
+  if (warnEl) warnEl.textContent = '';
+}
+
+function showWarn(message) {
+  const warnEl = document.getElementById('warn');
+  if (warnEl) {
+    warnEl.textContent = message;
+    warnEl.classList.add('blink');
+    setTimeout(() => warnEl.classList.remove('blink'), 3000);
+  }
+}
