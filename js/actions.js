@@ -1,6 +1,9 @@
 // ===============================
-/* COMPLETE actions.js with autosave */
+// COMPLETE actions.js - FIXED & PRODUCTION READY
 // ===============================
+
+// Make AUCTION_DATA globally available (from storage.js)
+let AUCTION_DATA = null;
 
 function setCategory(cat) {
   if (state.timer.running && !confirm('Timer running! Switch category anyway?')) {
@@ -17,6 +20,7 @@ function setCategory(cat) {
 }
 
 function nextPlayer() {
+  // Return current player back to pool if needed
   if (state.current) {
     const { player, category, bidder } = state.current;
 
@@ -30,8 +34,8 @@ function nextPlayer() {
     cancelTimer();
   }
 
-  const pool = state.pools[state.category];
-  const skipped = state.skipped[state.category];
+  const pool = state.pools[state.category] || [];
+  const skipped = state.skipped[state.category] || [];
   const merged = [...pool, ...skipped];
 
   if (merged.length === 0) {
@@ -66,6 +70,7 @@ function skipPlayer() {
 
   const player = state.current.player;
 
+  // No bids → UNSOLD → reduce valuation
   if (state.current.bidder === null) {
     applyUnsoldReduction(player);
     state.pools.UNSOLD.push(player);
@@ -85,7 +90,7 @@ function placeBid(teamIndex) {
     return;
   }
 
-  const step = Math.max(1, Number(dom.bidStepInput?.value) || 0);
+  const step = Math.max(1, Number(dom?.bidStepInput?.value) || 25000);
   const team = state.teams[teamIndex];
 
   const nextBid =
@@ -118,6 +123,7 @@ function sell() {
 
   const { player, category, bid, bidder } = state.current;
 
+  // Safety: prevent negative budget
   if (state.teams[bidder].budget < bid) {
     alert('Budget insufficient. Cannot sell.');
     return;
@@ -140,7 +146,7 @@ function sell() {
   cancelTimer();
   callAutoSave();
 
-  // Broadcast to other tabs
+  // Optional broadcast to other tabs
   if (window.BroadcastChannel) {
     const channel = new BroadcastChannel('auction_updates');
     channel.postMessage({
@@ -162,13 +168,25 @@ function undoLastSale() {
 
   state.teams[last.teamIndex].budget += last.price;
 
-  // Restore player to original category pool
+  // FIXED: Safe player restoration
   const originalPool = state.pools[last.category] || [];
-  const masterPlayer = (AUCTION_DATA?.players?.[last.category] || []).find(p => p.id === last.playerId);
+  const masterPlayer = AUCTION_DATA ? 
+    (AUCTION_DATA.players?.[last.category] || []).find(p => p.id === last.playerId) :
+    null;
   
   if (masterPlayer) {
     originalPool.push({
       ...masterPlayer,
+      unsoldCount: 0
+    });
+  } else {
+    // Fallback: recreate from sale data
+    originalPool.push({
+      id: last.playerId,
+      name: last.playerName,
+      category: last.category,
+      basePrice: Math.floor(last.price * 1.2),
+      position: last.position || '',
       unsoldCount: 0
     });
   }
@@ -178,7 +196,9 @@ function undoLastSale() {
 }
 
 function findPlayerInMaster(id, cat) {
-  return (AUCTION_DATA?.players?.[cat] || []).find(p => p.id === id) || null;
+  return AUCTION_DATA ? 
+    (AUCTION_DATA.players?.[cat] || []).find(p => p.id === id) : 
+    null;
 }
 
 function wireEvents() {
@@ -189,28 +209,41 @@ function wireEvents() {
     });
   });
 
-  // Action buttons
+  // Main action buttons
   const btnNext = document.getElementById('btnNext');
   const btnSkip = document.getElementById('btnSkip');
   const btnSell = document.getElementById('btnSell');
   const btnUndo = document.getElementById('btnUndo');
   const btnToggle = document.getElementById('btnToggleResults');
   const fileInput = document.getElementById('fileInput');
+  const btnExport = document.getElementById('btnExport');
+  const btnSaveState = document.getElementById('btnSaveState');
 
   if (btnNext) btnNext.addEventListener('click', nextPlayer);
   if (btnSkip) btnSkip.addEventListener('click', skipPlayer);
   if (btnSell) btnSell.addEventListener('click', sell);
   if (btnUndo) btnUndo.addEventListener('click', undoLastSale);
 
+  // Results toggle
   if (btnToggle) {
     btnToggle.addEventListener('click', (e) => {
       const hidden = btnToggle.dataset.hidden === '1';
       btnToggle.dataset.hidden = hidden ? '0' : '1';
+      btnToggle.textContent = hidden ? 'Hide Results' : 'Show Results';
       renderResults();
     });
   }
 
+  // File operations
   if (fileInput) {
     fileInput.addEventListener('change', (e) => loadState(e.target.files));
+  }
+
+  if (btnExport) {
+    btnExport.addEventListener('click', exportCSV);
+  }
+
+  if (btnSaveState) {
+    btnSaveState.addEventListener('click', saveState);
   }
 }
