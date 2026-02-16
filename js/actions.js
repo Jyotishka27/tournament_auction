@@ -1,10 +1,7 @@
 // ===============================
-// actions.js
+/* COMPLETE actions.js with autosave */
 // ===============================
 
-// ===============================
-// Category handling
-// ===============================
 function setCategory(cat) {
   if (state.timer.running && !confirm('Timer running! Switch category anyway?')) {
     return;
@@ -15,14 +12,11 @@ function setCategory(cat) {
   }
 
   state.category = cat;
+  callAutoSave();
   renderAll();
 }
 
-// ===============================
-// Player selection
-// ===============================
 function nextPlayer() {
-  // Return current player back to pool if needed
   if (state.current) {
     const { player, category, bidder } = state.current;
 
@@ -60,12 +54,10 @@ function nextPlayer() {
   };
 
   cancelTimer();
+  callAutoSave();
   renderAll();
 }
 
-// ===============================
-// Skip / Unsold logic
-// ===============================
 function skipPlayer() {
   if (!state.current) {
     alert('No active player to skip.');
@@ -74,7 +66,6 @@ function skipPlayer() {
 
   const player = state.current.player;
 
-  // No bids → UNSOLD → reduce valuation
   if (state.current.bidder === null) {
     applyUnsoldReduction(player);
     state.pools.UNSOLD.push(player);
@@ -84,19 +75,17 @@ function skipPlayer() {
 
   state.current = null;
   cancelTimer();
+  callAutoSave();
   renderAll();
 }
 
-// ===============================
-// Bidding
-// ===============================
 function placeBid(teamIndex) {
   if (!state.current) {
     alert('No active player. Click Next Player.');
     return;
   }
 
-  const step = Math.max(1, Number(dom.bidStepInput.value) || 0);
+  const step = Math.max(1, Number(dom.bidStepInput?.value) || 0);
   const team = state.teams[teamIndex];
 
   const nextBid =
@@ -116,9 +105,6 @@ function placeBid(teamIndex) {
   renderCurrent();
 }
 
-// ===============================
-// Sell player
-// ===============================
 function sell() {
   if (!state.current) {
     alert('No active player.');
@@ -132,7 +118,6 @@ function sell() {
 
   const { player, category, bid, bidder } = state.current;
 
-  // Safety: prevent negative budget
   if (state.teams[bidder].budget < bid) {
     alert('Budget insufficient. Cannot sell.');
     return;
@@ -153,8 +138,9 @@ function sell() {
 
   state.current = null;
   cancelTimer();
+  callAutoSave();
 
-  // Optional broadcast to other tabs
+  // Broadcast to other tabs
   if (window.BroadcastChannel) {
     const channel = new BroadcastChannel('auction_updates');
     channel.postMessage({
@@ -166,9 +152,6 @@ function sell() {
   renderAll();
 }
 
-// ===============================
-// Undo last sale
-// ===============================
 function undoLastSale() {
   const last = state.sales.pop();
 
@@ -179,30 +162,26 @@ function undoLastSale() {
 
   state.teams[last.teamIndex].budget += last.price;
 
-  const originalPlayer = findPlayerInMaster(last.playerId, last.category);
-  if (originalPlayer) {
-    state.pools[last.category].push({
-      ...originalPlayer,
+  // Restore player to original category pool
+  const originalPool = state.pools[last.category] || [];
+  const masterPlayer = (AUCTION_DATA?.players?.[last.category] || []).find(p => p.id === last.playerId);
+  
+  if (masterPlayer) {
+    originalPool.push({
+      ...masterPlayer,
       unsoldCount: 0
     });
   }
 
+  callAutoSave();
   renderAll();
 }
 
-// ===============================
-// Master data lookup
-// ===============================
 function findPlayerInMaster(id, cat) {
-  if (cat === 'UNSOLD') return null;
-  return (AUCTION_DATA.players[cat] || []).find(p => p.id === id) || null;
+  return (AUCTION_DATA?.players?.[cat] || []).find(p => p.id === id) || null;
 }
 
-// ===============================
-// Wire UI Events
-// ===============================
 function wireEvents() {
-
   // Category buttons
   document.querySelectorAll('.catBtn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -210,14 +189,18 @@ function wireEvents() {
     });
   });
 
+  // Action buttons
   const btnNext = document.getElementById('btnNext');
   const btnSkip = document.getElementById('btnSkip');
   const btnSell = document.getElementById('btnSell');
+  const btnUndo = document.getElementById('btnUndo');
   const btnToggle = document.getElementById('btnToggleResults');
+  const fileInput = document.getElementById('fileInput');
 
   if (btnNext) btnNext.addEventListener('click', nextPlayer);
   if (btnSkip) btnSkip.addEventListener('click', skipPlayer);
   if (btnSell) btnSell.addEventListener('click', sell);
+  if (btnUndo) btnUndo.addEventListener('click', undoLastSale);
 
   if (btnToggle) {
     btnToggle.addEventListener('click', (e) => {
@@ -227,4 +210,7 @@ function wireEvents() {
     });
   }
 
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => loadState(e.target.files));
+  }
 }
